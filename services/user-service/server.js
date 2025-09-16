@@ -47,8 +47,12 @@ class UserService {
                         password: adminPassword,
                         firstName: 'Administrador',
                         lastName: 'Sistema',
-                        role: 'admin',
-                        status: 'active'
+                        preferences: {
+                            defaultStore: "Supermercado Central",
+                            currency: "BRL"
+                        },
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
                     });
 
                     console.log('Usuário administrador criado (admin@microservices.com / admin123)');
@@ -211,7 +215,7 @@ class UserService {
             // Hash password
             const hashedPassword = await bcrypt.hash(password, 12);
 
-            // Criar usuário com schema NoSQL flexível
+            // Criar usuário seguindo schema especificado
             const newUser = await this.usersDb.create({
                 id: uuidv4(),
                 email: email.toLowerCase(),
@@ -219,21 +223,12 @@ class UserService {
                 password: hashedPassword,
                 firstName,
                 lastName,
-                role: 'user',
-                status: 'active',
-                profile: {
-                    bio: null,
-                    avatar: null,
-                    preferences: {
-                        theme: 'light',
-                        language: 'pt-BR'
-                    }
+                preferences: {
+                    defaultStore: "Supermercado Central",
+                    currency: "BRL"
                 },
-                metadata: {
-                    registrationDate: new Date().toISOString(),
-                    lastLogin: null,
-                    loginCount: 0
-                }
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
             });
 
             const { password: _, ...userWithoutPassword } = newUser;
@@ -343,12 +338,12 @@ class UserService {
             }
 
             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'user-secret');
-            const user = await this.usersDb.findById(decoded.id);
+            const user = await this.usersDb.findOne({ id: decoded.id });
 
-            if (!user || user.status !== 'active') {
+            if (!user) {
                 return res.status(401).json({
                     success: false,
-                    message: 'Usuário não encontrado ou inativo'
+                    message: 'Usuário não encontrado'
                 });
             }
 
@@ -447,11 +442,11 @@ class UserService {
         }
     }
 
-    // Update user (demonstrando flexibilidade NoSQL)
+    // Update user seguindo schema especificado
     async updateUser(req, res) {
         try {
             const { id } = req.params;
-            const { firstName, lastName, email, bio, theme, language } = req.body;
+            const { firstName, lastName, email, defaultStore, currency } = req.body;
 
             // Verificar permissão
             if (req.user.id !== id && req.user.role !== 'admin') {
@@ -469,16 +464,17 @@ class UserService {
                 });
             }
 
-            // Updates flexíveis com schema NoSQL
-            const updates = {};
+            // Updates seguindo schema especificado
+            const updates = {
+                updatedAt: new Date().toISOString()
+            };
             if (firstName) updates.firstName = firstName;
             if (lastName) updates.lastName = lastName;
             if (email) updates.email = email.toLowerCase();
             
-            // Atualizar campos aninhados (demonstrando NoSQL)
-            if (bio !== undefined) updates['profile.bio'] = bio;
-            if (theme) updates['profile.preferences.theme'] = theme;
-            if (language) updates['profile.preferences.language'] = language;
+            // Atualizar preferences se fornecidas
+            if (defaultStore) updates['preferences.defaultStore'] = defaultStore;
+            if (currency) updates['preferences.currency'] = currency;
 
             const updatedUser = await this.usersDb.update(id, updates);
             const { password, ...userWithoutPassword } = updatedUser;

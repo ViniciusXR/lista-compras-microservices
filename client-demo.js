@@ -78,18 +78,17 @@ class MicroservicesClient {
         }
     }
 
-    // Buscar produtos
-    async getProducts(filters = {}) {
+    // Buscar itens
+    async getItems(filters = {}) {
         try {
-            console.log('\nBuscando produtos...');
-            const response = await this.api.get('/api/products', { params: filters });
+            console.log('\nBuscando itens...');
+            const response = await this.api.get('/api/items', { params: filters });
             
             if (response.data.success) {
-                const products = response.data.data;
-                console.log(`Encontrados ${products.length} produtos`);
-                products.forEach((product, index) => {
-                    const tags = product.tags ? ` [${product.tags.join(', ')}]` : '';
-                    console.log(`  ${index + 1}. ${product.name} - R$ ${product.price} (Estoque: ${product.stock})${tags}`);
+                const items = response.data.data;
+                console.log(`Encontrados ${items.length} itens`);
+                items.forEach((item, index) => {
+                    console.log(`  ${index + 1}. ${item.name} - ${item.brand} (${item.category}) - R$ ${item.averagePrice}/${item.unit}`);
                 });
                 return response.data;
             } else {
@@ -98,31 +97,108 @@ class MicroservicesClient {
             }
         } catch (error) {
             const message = error.response?.data?.message || error.message;
-            console.log('Erro ao buscar produtos:', message);
+            console.log('Erro ao buscar itens:', message);
             return { data: [] };
         }
     }
 
-    // Criar produto (requer autenticação)
-    async createProduct(productData) {
+    // Criar lista de compras
+    async createList(listData) {
         try {
-            console.log('\nCriando produto...');
+            console.log('\nCriando lista de compras...');
             
             if (!this.authToken) {
                 throw new Error('Token de autenticação necessário');
             }
 
-            const response = await this.api.post('/api/products', productData);
+            const response = await this.api.post('/api/lists', listData);
             
             if (response.data.success) {
-                console.log('Produto criado:', response.data.data.name);
+                console.log('Lista criada:', response.data.data.name);
                 return response.data;
             } else {
-                throw new Error(response.data.message || 'Falha na criação do produto');
+                throw new Error(response.data.message || 'Falha na criação da lista');
             }
         } catch (error) {
             const message = error.response?.data?.message || error.message;
-            console.log('Erro ao criar produto:', message);
+            console.log('Erro ao criar lista:', message);
+            throw error;
+        }
+    }
+
+    // Buscar listas do usuário
+    async getLists() {
+        try {
+            console.log('\nBuscando listas de compras...');
+            
+            if (!this.authToken) {
+                throw new Error('Token de autenticação necessário');
+            }
+
+            const response = await this.api.get('/api/lists');
+            
+            if (response.data.success) {
+                const lists = response.data.data.lists;
+                console.log(`Encontradas ${lists.length} listas`);
+                lists.forEach((list, index) => {
+                    console.log(`  ${index + 1}. ${list.name} - ${list.summary.totalItems} itens - Status: ${list.status}`);
+                });
+                return response.data;
+            } else {
+                console.log('Resposta inválida do servidor');
+                return { data: { lists: [] } };
+            }
+        } catch (error) {
+            const message = error.response?.data?.message || error.message;
+            console.log('Erro ao buscar listas:', message);
+            return { data: { lists: [] } };
+        }
+    }
+
+    // Adicionar item à lista
+    async addItemToList(listId, itemData) {
+        try {
+            console.log(`\nAdicionando item à lista ${listId}...`);
+            
+            if (!this.authToken) {
+                throw new Error('Token de autenticação necessário');
+            }
+
+            const response = await this.api.post(`/api/lists/${listId}/items`, itemData);
+            
+            if (response.data.success) {
+                console.log('Item adicionado à lista com sucesso');
+                return response.data;
+            } else {
+                throw new Error(response.data.message || 'Falha ao adicionar item à lista');
+            }
+        } catch (error) {
+            const message = error.response?.data?.message || error.message;
+            console.log('Erro ao adicionar item à lista:', message);
+            throw error;
+        }
+    }
+
+    // Criar item (requer autenticação)
+    async createItem(itemData) {
+        try {
+            console.log('\nCriando item...');
+            
+            if (!this.authToken) {
+                throw new Error('Token de autenticação necessário');
+            }
+
+            const response = await this.api.post('/api/items', itemData);
+            
+            if (response.data.success) {
+                console.log('Item criado:', response.data.data.name);
+                return response.data;
+            } else {
+                throw new Error(response.data.message || 'Falha na criação do item');
+            }
+        } catch (error) {
+            const message = error.response?.data?.message || error.message;
+            console.log('Erro ao criar item:', message);
             throw error;
         }
     }
@@ -131,13 +207,13 @@ class MicroservicesClient {
     async getCategories() {
         try {
             console.log('\nBuscando categorias...');
-            const response = await this.api.get('/api/products/categories');
+            const response = await this.api.get('/api/items/categories');
             
             if (response.data.success) {
                 const categories = response.data.data;
                 console.log(`Encontradas ${categories.length} categorias`);
                 categories.forEach((category, index) => {
-                    console.log(`  ${index + 1}. ${category.name} - ${category.productCount} produtos`);
+                    console.log(`  ${index + 1}. ${category.name} - ${category.itemCount} itens`);
                 });
                 return response.data;
             } else {
@@ -178,7 +254,8 @@ class MicroservicesClient {
                 }
 
                 console.log(`   Usuários disponíveis: ${dashboard.data?.users?.available ? 'Sim' : 'Não'}`);
-                console.log(`   Produtos disponíveis: ${dashboard.data?.products?.available ? 'Sim' : 'Não'}`);
+                console.log(`   Itens disponíveis: ${dashboard.data?.items?.available ? 'Sim' : 'Não'}`);
+                console.log(`   Listas disponíveis: ${dashboard.data?.lists?.available ? 'Sim' : 'Não'}`);
                 console.log(`   Categorias disponíveis: ${dashboard.data?.categories?.available ? 'Sim' : 'Não'}`);
                 
                 return response.data;
@@ -202,13 +279,13 @@ class MicroservicesClient {
                 const results = response.data.data;
                 console.log(`Resultados para "${results.query}":`);
                 
-                if (results.products?.available) {
-                    console.log(`   Produtos encontrados: ${results.products.results.length}`);
-                    results.products.results.forEach((product, index) => {
-                        console.log(`     ${index + 1}. ${product.name} - R$ ${product.price}`);
+                if (results.items?.available) {
+                    console.log(`   Itens encontrados: ${results.items.results.length}`);
+                    results.items.results.forEach((item, index) => {
+                        console.log(`     ${index + 1}. ${item.name} - ${item.category} - R$ ${item.averagePrice}/${item.unit}`);
                     });
                 } else {
-                    console.log('   Serviço de produtos indisponível');
+                    console.log('   Serviço de itens indisponível');
                 }
 
                 if (results.users?.available) {
@@ -311,16 +388,16 @@ class MicroservicesClient {
 
             await this.delay(1000);
 
-            // 3. Buscar produtos
-            await this.getProducts({ limit: 5 });
+            // 3. Buscar itens
+            const itemsResponse = await this.getItems({ limit: 5 });
             await this.delay(1000);
 
             // 4. Buscar categorias
             await this.getCategories();
             await this.delay(1000);
 
-            // 5. Fazer busca
-            await this.search('smartphone');
+            // 5. Fazer busca de itens
+            await this.search('arroz');
             await this.delay(1000);
 
             // 6. Se autenticado, fazer operações que requerem auth
@@ -333,31 +410,63 @@ class MicroservicesClient {
                     console.log('Dashboard não disponível:', error.message);
                 }
 
-                // Criar produto de teste
+                // Criar lista de compras
+                let createdList = null;
                 try {
-                    const newProduct = await this.createProduct({
-                        name: 'Produto Demo NoSQL',
-                        description: 'Produto criado via demo com banco NoSQL',
-                        price: 99.99,
-                        stock: 10,
-                        category: {
-                            name: 'Demo',
-                            slug: 'demo'
-                        },
-                        tags: ['demo', 'nosql', 'teste'],
-                        specifications: {
-                            material: 'Digital',
-                            cor: 'Virtual'
-                        },
-                        featured: true
+                    const listResponse = await this.createList({
+                        name: 'Lista de Compras Demo',
+                        description: 'Lista criada durante demonstração do sistema'
                     });
 
-                    if (newProduct.success) {
+                    if (listResponse.success) {
+                        createdList = listResponse.data;
                         await this.delay(1000);
-                        console.log(`Produto criado: ${newProduct.data.name} (ID: ${newProduct.data.id})`);
+                        console.log(`Lista criada: ${createdList.name} (ID: ${createdList.id})`);
                     }
                 } catch (error) {
-                    console.log('Criação de produto falhou:', error.message);
+                    console.log('Criação de lista falhou:', error.message);
+                }
+
+                // Adicionar itens à lista
+                if (createdList && itemsResponse.data && itemsResponse.data.length > 0) {
+                    try {
+                        const firstItem = itemsResponse.data[0];
+                        await this.addItemToList(createdList.id, {
+                            itemId: firstItem.id,
+                            quantity: 2,
+                            unit: firstItem.unit,
+                            estimatedPrice: firstItem.averagePrice,
+                            notes: 'Adicionado via demo'
+                        });
+
+                        await this.delay(1000);
+
+                        // Buscar listas atualizadas
+                        await this.getLists();
+                        await this.delay(1000);
+                    } catch (error) {
+                        console.log('Erro ao adicionar item à lista:', error.message);
+                    }
+                }
+
+                // Criar item de teste
+                try {
+                    const newItem = await this.createItem({
+                        name: 'Item Demo NoSQL',
+                        category: 'Alimentos',
+                        brand: 'Demo Brand',
+                        unit: 'un',
+                        averagePrice: 9.99,
+                        barcode: '1234567890123',
+                        description: 'Item criado via demo com banco NoSQL'
+                    });
+
+                    if (newItem.success) {
+                        await this.delay(1000);
+                        console.log(`Item criado: ${newItem.data.name} (ID: ${newItem.data.id})`);
+                    }
+                } catch (error) {
+                    console.log('Criação de item falhou:', error.message);
                 }
             } else {
                 console.log('\nOperações autenticadas puladas (sem token válido)');
@@ -367,22 +476,27 @@ class MicroservicesClient {
             console.log('Demonstração concluída com sucesso!');
             console.log('=====================================');
             console.log('Padrões demonstrados:');
-            console.log('   Service Discovery via Registry');
-            console.log('   API Gateway com roteamento');
-            console.log('   Circuit Breaker pattern');
-            console.log('   Comunicação inter-service');
-            console.log('   Aggregated endpoints');
-            console.log('   Health checks distribuídos');
-            console.log('   Database per Service (NoSQL)');
-            console.log('   JSON-based document storage');
-            console.log('   Full-text search capabilities');
-            console.log('   Schema flexível com documentos aninhados');
+            console.log('   ✅ Service Discovery via Registry');
+            console.log('   ✅ API Gateway com roteamento');
+            console.log('   ✅ Circuit Breaker pattern');
+            console.log('   ✅ Comunicação inter-service');
+            console.log('   ✅ Aggregated endpoints');
+            console.log('   ✅ Health checks distribuídos');
+            console.log('   ✅ Database per Service (NoSQL)');
+            console.log('   ✅ JSON-based document storage');
+            console.log('   ✅ Full-text search capabilities');
+            console.log('   ✅ Schema flexível com documentos aninhados');
+            console.log('   ✅ Autenticação JWT entre serviços');
+            console.log('   ✅ CRUD de listas de compras');
+            console.log('   ✅ Gerenciamento de itens');
+            console.log('   ✅ Sistema de categorias');
 
         } catch (error) {
             console.error('Erro na demonstração:', error.message);
             console.log('\nVerifique se todos os serviços estão rodando:');
             console.log('   User Service: http://127.0.0.1:3001/health');
-            console.log('   Product Service: http://127.0.0.1:3002/health');
+            console.log('   Item Service: http://127.0.0.1:3002/health');
+            console.log('   List Service: http://127.0.0.1:3003/health');
             console.log('   API Gateway: http://127.0.0.1:3000/health');
         }
     }
@@ -403,7 +517,8 @@ async function main() {
         console.log('');
         console.log('Opções:');
         console.log('  --health    Verificar apenas saúde dos serviços');
-        console.log('  --products  Listar apenas produtos');
+        console.log('  --items     Listar apenas itens');
+        console.log('  --lists     Listar listas de compras (requer auth)');
         console.log('  --search    Fazer busca (requer termo: --search=termo)');
         console.log('  --help      Mostrar esta ajuda');
         console.log('');
@@ -416,11 +531,23 @@ async function main() {
     try {
         if (args.includes('--health')) {
             await client.checkHealth();
-        } else if (args.includes('--products')) {
-            await client.getProducts();
+        } else if (args.includes('--items')) {
+            await client.getItems();
+        } else if (args.includes('--lists')) {
+            // Para listas, vamos tentar fazer login primeiro
+            try {
+                await client.login({
+                    identifier: 'admin@microservices.com',
+                    password: 'admin123'
+                });
+                await client.getLists();
+            } catch (error) {
+                console.log('Erro: Funcionalidade de listas requer autenticação');
+                console.log('Use a demonstração completa para testar: node client-demo.js');
+            }
         } else if (args.some(arg => arg.startsWith('--search'))) {
             const searchArg = args.find(arg => arg.startsWith('--search'));
-            const searchTerm = searchArg.includes('=') ? searchArg.split('=')[1] : 'smartphone';
+            const searchTerm = searchArg.includes('=') ? searchArg.split('=')[1] : 'arroz';
             await client.search(searchTerm);
         } else {
             // Demonstração completa

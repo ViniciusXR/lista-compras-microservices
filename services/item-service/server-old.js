@@ -15,7 +15,7 @@ class ItemService {
         this.app = express();
         this.port = process.env.PORT || 3002;
         this.serviceName = 'item-service';
-        this.serviceUrl = `http://localhost:${this.port}`;
+        this.serviceUrl = `http://127.0.0.1:${this.port}`;
         
         this.setupDatabase();
         this.setupMiddleware();
@@ -26,15 +26,15 @@ class ItemService {
 
     setupDatabase() {
         const dbPath = path.join(__dirname, 'database');
-        this.itemsDb = new JsonDatabase(dbPath, 'items');
-        console.log('Item Service: Banco NoSQL inicializado');
+        this.productsDb = new JsonDatabase(dbPath, 'products');
+        console.log('Product Service: Banco NoSQL inicializado');
     }
 
     async seedInitialData() {
         // Aguardar inicialização e criar itens de exemplo para lista de compras
         setTimeout(async () => {
             try {
-                const existingItems = await this.itemsDb.find();
+                const existingItems = await this.productsDb.find();
                 
                 if (existingItems.length === 0) {
                     const sampleItems = [
@@ -274,7 +274,7 @@ class ItemService {
                     ];
 
                     for (const item of sampleItems) {
-                        await this.itemsDb.create(item);
+                        await this.productsDb.create(item);
                     }
 
                     console.log('20 itens de lista de compras criados no Item Service');
@@ -305,8 +305,8 @@ class ItemService {
         // Health check
         this.app.get('/health', async (req, res) => {
             try {
-                const itemCount = await this.itemsDb.count();
-                const activeItems = await this.itemsDb.count({ active: true });
+                const productCount = await this.productsDb.count();
+                const activeProducts = await this.productsDb.count({ active: true });
                 
                 res.json({
                     service: this.serviceName,
@@ -316,8 +316,8 @@ class ItemService {
                     version: '1.0.0',
                     database: {
                         type: 'JSON-NoSQL',
-                        itemCount: itemCount,
-                        activeItems: activeItems
+                        productCount: productCount,
+                        activeProducts: activeProducts
                     }
                 });
             } catch (error) {
@@ -370,7 +370,7 @@ class ItemService {
         });
 
         this.app.use((error, req, res, next) => {
-            console.error('Item Service Error:', error);
+            console.error('Product Service Error:', error);
             res.status(500).json({
                 success: false,
                 message: 'Erro interno do serviço',
@@ -443,13 +443,13 @@ class ItemService {
                 filter.name = { $regex: name, $options: 'i' };
             }
 
-            const items = await this.itemsDb.find(filter, {
+            const items = await this.productsDb.find(filter, {
                 skip: skip,
                 limit: parseInt(limit),
                 sort: { createdAt: -1 }
             });
 
-            const total = await this.itemsDb.count(filter);
+            const total = await this.productsDb.count(filter);
 
             res.json({
                 success: true,
@@ -469,26 +469,6 @@ class ItemService {
             });
         }
     }
-
-    // Get item específico
-    async getItem(req, res) {
-        try {
-            const { id } = req.params;
-            const item = await this.itemsDb.findOne({ id: id });
-
-            if (!item) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Item não encontrado'
-                });
-            }
-
-            res.json({
-                success: true,
-                data: item
-            });
-        } catch (error) {
-            console.error('Erro ao buscar item:', error);
             res.status(500).json({
                 success: false,
                 message: 'Erro interno do servidor'
@@ -496,47 +476,80 @@ class ItemService {
         }
     }
 
-    // Criar novo item
-    async createItem(req, res) {
+    // Get product by ID
+    async getProduct(req, res) {
         try {
-            const { name, category, brand, unit, averagePrice, barcode, description } = req.body;
+            const { id } = req.params;
+            const product = await this.productsDb.findById(id);
 
-            if (!name || !category || !brand || !unit || averagePrice === undefined) {
-                return res.status(400).json({
+            if (!product) {
+                return res.status(404).json({
                     success: false,
-                    message: 'Campos obrigatórios: name, category, brand, unit, averagePrice'
+                    message: 'Produto não encontrado'
                 });
             }
 
-            // Verificar se categoria é válida
-            const validCategories = ['Alimentos', 'Limpeza', 'Higiene', 'Bebidas', 'Padaria'];
-            if (!validCategories.includes(category)) {
+            res.json({
+                success: true,
+                data: product
+            });
+        } catch (error) {
+            console.error('Erro ao buscar produto:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro interno do servidor'
+            });
+        }
+    }
+
+    // Create product (demonstrando schema NoSQL flexível)
+    async createProduct(req, res) {
+        try {
+            const { 
+                name, 
+                description, 
+                price, 
+                stock, 
+                category, 
+                images, 
+                tags, 
+                specifications,
+                featured = false
+            } = req.body;
+
+            if (!name || !price) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Categoria deve ser uma das: ' + validCategories.join(', ')
+                    message: 'Nome e preço são obrigatórios'
                 });
             }
 
-            const newItem = await this.itemsDb.create({
+            // Criar produto com schema NoSQL flexível
+            const newProduct = await this.productsDb.create({
                 id: uuidv4(),
-                name: name,
-                category: category,
-                brand: brand,
-                unit: unit,
-                averagePrice: parseFloat(averagePrice),
-                barcode: barcode || '',
+                name,
                 description: description || '',
+                price: parseFloat(price),
+                stock: parseInt(stock) || 0,
+                category: category || { name: 'Geral', slug: 'geral' },
+                images: Array.isArray(images) ? images : (images ? [images] : []),
+                tags: Array.isArray(tags) ? tags : (tags ? [tags] : []),
+                specifications: specifications || {},
                 active: true,
-                createdAt: new Date().toISOString()
+                featured: featured,
+                metadata: {
+                    createdBy: req.user.id,
+                    createdByName: `${req.user.firstName} ${req.user.lastName}`
+                }
             });
 
             res.status(201).json({
                 success: true,
-                message: 'Item criado com sucesso',
-                data: newItem
+                message: 'Produto criado com sucesso',
+                data: newProduct
             });
         } catch (error) {
-            console.error('Erro ao criar item:', error);
+            console.error('Erro ao criar produto:', error);
             res.status(500).json({
                 success: false,
                 message: 'Erro interno do servidor'
@@ -544,50 +557,65 @@ class ItemService {
         }
     }
 
-    // Atualizar item
-    async updateItem(req, res) {
+    // Update product (demonstrando flexibilidade NoSQL)
+    async updateProduct(req, res) {
         try {
             const { id } = req.params;
-            const { name, category, brand, unit, averagePrice, barcode, description, active } = req.body;
+            const { 
+                name, 
+                description, 
+                price, 
+                stock, 
+                category, 
+                images, 
+                tags, 
+                specifications,
+                active,
+                featured
+            } = req.body;
 
-            const item = await this.itemsDb.findOne({ id: id });
-
-            if (!item) {
+            const product = await this.productsDb.findById(id);
+            if (!product) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Item não encontrado'
+                    message: 'Produto não encontrado'
                 });
             }
 
+            // Updates flexíveis com NoSQL
             const updates = {};
             if (name !== undefined) updates.name = name;
-            if (category !== undefined) {
-                // Validar categoria
-                const validCategories = ['Alimentos', 'Limpeza', 'Higiene', 'Bebidas', 'Padaria'];
-                if (!validCategories.includes(category)) {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'Categoria deve ser uma das: ' + validCategories.join(', ')
-                    });
-                }
-                updates.category = category;
-            }
-            if (brand !== undefined) updates.brand = brand;
-            if (unit !== undefined) updates.unit = unit;
-            if (averagePrice !== undefined) updates.averagePrice = parseFloat(averagePrice);
-            if (barcode !== undefined) updates.barcode = barcode;
             if (description !== undefined) updates.description = description;
+            if (price !== undefined) updates.price = parseFloat(price);
+            if (stock !== undefined) updates.stock = parseInt(stock);
+            if (category !== undefined) updates.category = category;
+            if (images !== undefined) {
+                updates.images = Array.isArray(images) ? images : (images ? [images] : []);
+            }
+            if (tags !== undefined) {
+                updates.tags = Array.isArray(tags) ? tags : (tags ? [tags] : []);
+            }
+            if (specifications !== undefined) {
+                // Merge com especificações existentes
+                updates.specifications = { ...product.specifications, ...specifications };
+            }
             if (active !== undefined) updates.active = active;
+            if (featured !== undefined) updates.featured = featured;
 
-            const updatedItem = await this.itemsDb.update({ id: id }, updates);
+            // Adicionar metadata de atualização
+            updates['metadata.lastUpdatedBy'] = req.user.id;
+            updates['metadata.lastUpdatedByName'] = `${req.user.firstName} ${req.user.lastName}`;
+            updates['metadata.lastUpdatedAt'] = new Date().toISOString();
+
+            const updatedProduct = await this.productsDb.update(id, updates);
 
             res.json({
                 success: true,
-                message: 'Item atualizado com sucesso',
-                data: updatedItem
+                message: 'Produto atualizado com sucesso',
+                data: updatedProduct
             });
         } catch (error) {
-            console.error('Erro ao atualizar item:', error);
+            console.error('Erro ao atualizar produto:', error);
             res.status(500).json({
                 success: false,
                 message: 'Erro interno do servidor'
@@ -595,31 +623,122 @@ class ItemService {
         }
     }
 
-    // Get categories
-    async getCategories(req, res) {
+    // Delete product (soft delete)
+    async deleteProduct(req, res) {
         try {
-            const categories = [
-                'Alimentos',
-                'Limpeza', 
-                'Higiene',
-                'Bebidas',
-                'Padaria'
-            ];
+            const { id } = req.params;
 
-            // Contar itens por categoria
-            const categoriesWithCount = [];
-            for (const category of categories) {
-                const count = await this.itemsDb.count({ category: category, active: true });
-                categoriesWithCount.push({
-                    name: category,
-                    slug: category.toLowerCase(),
-                    itemCount: count
+            const product = await this.productsDb.findById(id);
+            if (!product) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Produto não encontrado'
                 });
             }
 
+            // Soft delete - desativar produto
+            await this.productsDb.update(id, { 
+                active: false,
+                'metadata.deletedBy': req.user.id,
+                'metadata.deletedByName': `${req.user.firstName} ${req.user.lastName}`,
+                'metadata.deletedAt': new Date().toISOString()
+            });
+
             res.json({
                 success: true,
-                data: categoriesWithCount
+                message: 'Produto removido com sucesso'
+            });
+        } catch (error) {
+            console.error('Erro ao deletar produto:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro interno do servidor'
+            });
+        }
+    }
+
+    // Update stock
+    async updateStock(req, res) {
+        try {
+            const { id } = req.params;
+            const { quantity, operation = 'set' } = req.body;
+
+            const product = await this.productsDb.findById(id);
+            if (!product) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Produto não encontrado'
+                });
+            }
+
+            let newStock = product.stock;
+            
+            switch (operation) {
+                case 'add':
+                    newStock += parseInt(quantity);
+                    break;
+                case 'subtract':
+                    newStock = Math.max(0, newStock - parseInt(quantity));
+                    break;
+                case 'set':
+                default:
+                    newStock = parseInt(quantity);
+                    break;
+            }
+
+            await this.productsDb.update(id, { 
+                stock: newStock,
+                'metadata.lastStockUpdate': new Date().toISOString(),
+                'metadata.lastStockUpdateBy': req.user.id
+            });
+
+            res.json({
+                success: true,
+                message: 'Estoque atualizado com sucesso',
+                data: {
+                    productId: id,
+                    previousStock: product.stock,
+                    newStock: newStock,
+                    operation: operation,
+                    quantity: parseInt(quantity)
+                }
+            });
+        } catch (error) {
+            console.error('Erro ao atualizar estoque:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro interno do servidor'
+            });
+        }
+    }
+
+    // Get categories (extraídas dos produtos)
+    async getCategories(req, res) {
+        try {
+            const products = await this.productsDb.find({ active: true });
+            
+            // Extrair categorias únicas dos produtos (demonstrando flexibilidade NoSQL)
+            const categoriesMap = new Map();
+            products.forEach(product => {
+                if (product.category) {
+                    const key = product.category.slug || product.category.name;
+                    if (!categoriesMap.has(key)) {
+                        categoriesMap.set(key, {
+                            name: product.category.name,
+                            slug: product.category.slug || product.category.name.toLowerCase().replace(/\s+/g, '-'),
+                            productCount: 0
+                        });
+                    }
+                    categoriesMap.get(key).productCount++;
+                }
+            });
+
+            const categories = Array.from(categoriesMap.values())
+                .sort((a, b) => a.name.localeCompare(b.name));
+            
+            res.json({
+                success: true,
+                data: categories
             });
         } catch (error) {
             console.error('Erro ao buscar categorias:', error);
@@ -630,10 +749,10 @@ class ItemService {
         }
     }
 
-    // Search items
-    async searchItems(req, res) {
+    // Search products (demonstrando busca NoSQL)
+    async searchProducts(req, res) {
         try {
-            const { q, limit = 10 } = req.query;
+            const { q, limit = 20, category } = req.query;
 
             if (!q) {
                 return res.status(400).json({
@@ -642,29 +761,33 @@ class ItemService {
                 });
             }
 
-            // Buscar itens que contenham o termo no nome ou descrição
-            const items = await this.itemsDb.find({
-                $or: [
-                    { name: { $regex: q, $options: 'i' } },
-                    { description: { $regex: q, $options: 'i' } },
-                    { brand: { $regex: q, $options: 'i' } }
-                ],
-                active: true
-            }, {
-                limit: parseInt(limit),
-                sort: { name: 1 }
-            });
+            // Busca full-text NoSQL
+            let products = await this.productsDb.search(q, ['name', 'description', 'tags']);
+            
+            // Filtrar apenas produtos ativos
+            products = products.filter(product => product.active);
+
+            // Filtrar por categoria se especificada
+            if (category) {
+                products = products.filter(product => 
+                    product.category?.slug === category || product.category?.name === category
+                );
+            }
+
+            // Aplicar limite
+            products = products.slice(0, parseInt(limit));
 
             res.json({
                 success: true,
                 data: {
                     query: q,
-                    results: items,
-                    count: items.length
+                    category: category || null,
+                    results: products,
+                    total: products.length
                 }
             });
         } catch (error) {
-            console.error('Erro na busca de itens:', error);
+            console.error('Erro na busca de produtos:', error);
             res.status(500).json({
                 success: false,
                 message: 'Erro interno do servidor'
@@ -672,23 +795,53 @@ class ItemService {
         }
     }
 
-    // Start server
+    // Register with service registry
+    registerWithRegistry() {
+        serviceRegistry.register(this.serviceName, {
+            url: this.serviceUrl,
+            version: '1.0.0',
+            database: 'JSON-NoSQL',
+            endpoints: ['/health', '/products', '/categories', '/search']
+        });
+    }
+
+    // Start health check reporting
+    startHealthReporting() {
+        setInterval(() => {
+            serviceRegistry.updateHealth(this.serviceName, true);
+        }, 30000);
+    }
+
     start() {
         this.app.listen(this.port, () => {
-            console.log(`Item Service running on port ${this.port}`);
+            console.log('=====================================');
+            console.log(`Product Service iniciado na porta ${this.port}`);
+            console.log(`URL: ${this.serviceUrl}`);
+            console.log(`Health: ${this.serviceUrl}/health`);
+            console.log(`Database: JSON-NoSQL`);
+            console.log('=====================================');
             
-            // Registrar no service registry
-            serviceRegistry.register(this.serviceName, {
-                url: this.serviceUrl,
-                version: '1.0.0',
-                description: 'Microsserviço para catálogo de itens/produtos'
-            });
+            // Register with service registry
+            this.registerWithRegistry();
+            this.startHealthReporting();
         });
     }
 }
 
-// Inicializar e startar o serviço
-const itemService = new ItemService();
-itemService.start();
+// Start service
+if (require.main === module) {
+    const productService = new ProductService();
+    productService.start();
+
+    // Graceful shutdown
+    process.on('SIGTERM', () => {
+        serviceRegistry.unregister('product-service');
+        process.exit(0);
+    });
+    process.on('SIGINT', () => {
+        serviceRegistry.unregister('product-service');
+        process.exit(0);
+    });
+}
 
 module.exports = ItemService;
