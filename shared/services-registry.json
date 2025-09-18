@@ -1,0 +1,36 @@
+{
+  "item-service": {
+    "url": "http://localhost:3002",
+    "version": "1.0.0",
+    "description": "Microsserviço para catálogo de itens/produtos",
+    "registeredAt": 1758226463985,
+    "lastHealthCheck": 1758226647026,
+    "healthy": true,
+    "pid": 21148
+  },
+  "list-service": {
+    "url": "http://localhost:3003",
+    "version": "1.0.0",
+    "description": "Microsserviço para gerenciamento de listas de compras",
+    "registeredAt": 1758226463987,
+    "lastHealthCheck": 1758226647030,
+    "healthy": true,
+    "pid": 22208
+  },
+  "user-service": {
+    "url": "http://localhost:3001",
+    "version": "1.0.0",
+    "database": "JSON-NoSQL",
+    "endpoints": [
+      "/health",
+      "/auth/register",
+      "/auth/login",
+      "/users",
+      "/search"
+    ],
+    "registeredAt": 1758226463992,
+    "lastHealthCheck": 1758226647034,
+    "healthy": true,
+    "pid": 21508
+  }
+}

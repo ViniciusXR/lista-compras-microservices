@@ -138,13 +138,13 @@ class ItemService {
                         },
                         {
                             id: uuidv4(),
-                            name: 'Papel Higiênico',
+                            name: 'Escova de dentes',
                             category: 'Limpeza',
-                            brand: 'Personal',
+                            brand: 'Flosserbrush',
                             unit: 'un',
                             averagePrice: 15.90,
                             barcode: '7891234567898',
-                            description: 'Papel higiênico folha dupla, pacote com 12 rolos',
+                            description: 'Escova de dentes, embalagem com 1 unidade',
                             active: true,
                             createdAt: new Date().toISOString()
                         },

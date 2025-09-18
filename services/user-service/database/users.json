@@ -1,0 +1,30 @@
+[
+  {
+    "id": "59cf99ed-06bb-4985-844f-0070b3a64b8b",
+    "email": "admin@microservices.com",
+    "username": "admin",
+    "password": "$2a$12$lU6B5Pf8MtQzHgVQmb1XBOPA0nmncX33ELKnpXedJullshnJPV1A6",
+    "firstName": "Administrador",
+    "lastName": "Sistema",
+    "preferences": {
+      "defaultStore": "Supermercado Central",
+      "currency": "BRL"
+    },
+    "createdAt": "2025-09-18T20:14:25.244Z",
+    "updatedAt": "2025-09-18T20:14:25.245Z"
+  },
+  {
+    "id": "f2708ad6-8ef2-4640-bf8a-bc5236d1e34a",
+    "email": "demo1758226483334@microservices.com",
+    "username": "demo1758226483334",
+    "password": "$2a$12$EILQE9M6e9l7vSJpRBEwm.fQsxkCR0//vkzU/Ioag5IP1DSEMc4oW",
+    "firstName": "Demo",
+    "lastName": "User",
+    "preferences": {
+      "defaultStore": "Supermercado Central",
+      "currency": "BRL"
+    },
+    "createdAt": "2025-09-18T20:14:43.593Z",
+    "updatedAt": "2025-09-18T20:14:43.594Z"
+  }
+]
