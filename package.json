@@ -18,6 +18,10 @@
     "health": "curl -s http://localhost:3000/health",
     "install:all": "npm install && cd services/user-service && npm install && cd ../item-service && npm install && cd ../list-service && npm install && cd ../../api-gateway && npm install",
     "clean": "rm -rf node_modules services/*/node_modules api-gateway/node_modules",
+    "clear:db": "node scripts/clear-database.js",
+    "clear:db:force": "node scripts/clear-database.js --force",
+    "populate:db": "node scripts/populate-sample-data.js",
+    "reset:db": "npm run clear:db:force && npm run populate:db",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

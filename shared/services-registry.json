@@ -3,10 +3,10 @@
     "url": "http://localhost:3003",
     "version": "1.0.0",
     "description": "Microsserviço para gerenciamento de listas de compras",
-    "registeredAt": 1758250926643,
-    "lastHealthCheck": 1758251590101,
+    "registeredAt": 1758290123566,
+    "lastHealthCheck": 1758290246584,
     "healthy": true,
-    "pid": 21556
+    "pid": 15968
   },
   "user-service": {
     "url": "http://localhost:3001",
@@ -19,18 +19,18 @@
       "/users",
       "/search"
     ],
-    "registeredAt": 1758251467090,
-    "lastHealthCheck": 1758251590112,
+    "registeredAt": 1758290123576,
+    "lastHealthCheck": 1758290246589,
     "healthy": true,
-    "pid": 17444
+    "pid": 2888
   },
   "item-service": {
     "url": "http://localhost:3002",
     "version": "1.0.0",
     "description": "Microsserviço para catálogo de itens/produtos",
-    "registeredAt": 1758251467089,
-    "lastHealthCheck": 1758251590119,
+    "registeredAt": 1758290123560,
+    "lastHealthCheck": 1758290246593,
     "healthy": true,
-    "pid": 19372
+    "pid": 10980
   }
 }

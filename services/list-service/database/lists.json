@@ -1,32 +1,43 @@
 [
   {
-    "id": "bb97caa6-4189-4ad8-83cf-50e636d57bd2",
-    "userId": "f2708ad6-8ef2-4640-bf8a-bc5236d1e34a",
-    "name": "Lista de Compras Demo",
-    "description": "Lista criada durante demonstração do sistema",
+    "id": "list-001",
+    "userId": "user-test-001",
+    "name": "Compras da Semana",
+    "description": "Lista de compras básicas para a semana",
     "status": "active",
-    "items": [],
-    "summary": {
-      "totalItems": 0,
-      "purchasedItems": 0,
-      "estimatedTotal": 0
-    },
-    "createdAt": "2025-09-18T20:14:48.752Z",
-    "updatedAt": "2025-09-18T20:14:48.753Z"
-  },
-  {
-    "id": "a25c13b5-36c8-405f-a014-2469fec7b390",
-    "userId": "75d44e60-d0f3-4567-aed7-fb0696804b17",
-    "name": "Lista de Compras Demo",
-    "description": "Lista criada durante demonstração do sistema",
-    "status": "active",
-    "items": [],
-    "summary": {
-      "totalItems": 0,
-      "purchasedItems": 0,
-      "estimatedTotal": 0
-    },
-    "createdAt": "2025-09-19T02:55:34.795Z",
-    "updatedAt": "2025-09-19T02:55:34.795Z"
+    "items": [
+      {
+        "itemId": "item-001",
+        "quantity": 1,
+        "unit": "kg",
+        "estimatedPrice": 18.5,
+        "notes": "Arroz tipo 1",
+        "completed": false,
+        "addedAt": "2025-09-19T13:56:43.354Z"
+      },
+      {
+        "itemId": "item-002",
+        "quantity": 2,
+        "unit": "kg",
+        "estimatedPrice": 17.8,
+        "notes": "Feijão preto",
+        "completed": false,
+        "addedAt": "2025-09-19T13:56:43.354Z"
+      },
+      {
+        "itemId": "item-003",
+        "quantity": 3,
+        "unit": "L",
+        "estimatedPrice": 12.75,
+        "notes": "Leite integral",
+        "completed": true,
+        "addedAt": "2025-09-19T13:56:43.354Z"
+      }
+    ],
+    "totalItems": 3,
+    "completedItems": 1,
+    "estimatedTotal": 49.05,
+    "createdAt": "2025-09-19T13:56:43.354Z",
+    "updatedAt": "2025-09-19T13:56:43.354Z"
   }
 ]

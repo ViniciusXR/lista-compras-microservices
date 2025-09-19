@@ -1,44 +1,22 @@
 [
   {
-    "id": "59cf99ed-06bb-4985-844f-0070b3a64b8b",
-    "email": "admin@microservices.com",
-    "username": "admin",
-    "password": "$2a$12$lU6B5Pf8MtQzHgVQmb1XBOPA0nmncX33ELKnpXedJullshnJPV1A6",
-    "firstName": "Administrador",
-    "lastName": "Sistema",
-    "preferences": {
-      "defaultStore": "Supermercado Central",
-      "currency": "BRL"
-    },
-    "createdAt": "2025-09-18T20:14:25.244Z",
-    "updatedAt": "2025-09-18T20:14:25.245Z"
+    "id": "user-admin-001",
+    "name": "Administrador",
+    "email": "admin@listadecompras.com",
+    "password": "$2b$10$K7L8C5hG9nF4mQ2R7vY8jO.xW6V5bZ9cX2mN4pQ8rT5uI1yA3sD7f",
+    "role": "admin",
+    "isActive": true,
+    "createdAt": "2025-09-19T13:56:43.353Z",
+    "updatedAt": "2025-09-19T13:56:43.354Z"
   },
   {
-    "id": "f2708ad6-8ef2-4640-bf8a-bc5236d1e34a",
-    "email": "demo1758226483334@microservices.com",
-    "username": "demo1758226483334",
-    "password": "$2a$12$EILQE9M6e9l7vSJpRBEwm.fQsxkCR0//vkzU/Ioag5IP1DSEMc4oW",
-    "firstName": "Demo",
-    "lastName": "User",
-    "preferences": {
-      "defaultStore": "Supermercado Central",
-      "currency": "BRL"
-    },
-    "createdAt": "2025-09-18T20:14:43.593Z",
-    "updatedAt": "2025-09-18T20:14:43.594Z"
-  },
-  {
-    "id": "75d44e60-d0f3-4567-aed7-fb0696804b17",
-    "email": "demo1758250529314@microservices.com",
-    "username": "demo1758250529314",
-    "password": "$2a$12$pada7hVPRzj5xDXX8c7hwu.aO2M92YDPkF34fw0EzTEFwFxOEBuhS",
-    "firstName": "Demo",
-    "lastName": "User",
-    "preferences": {
-      "defaultStore": "Supermercado Central",
-      "currency": "BRL"
-    },
-    "createdAt": "2025-09-19T02:55:29.605Z",
-    "updatedAt": "2025-09-19T02:55:29.605Z"
+    "id": "user-test-001",
+    "name": "Usuário Teste",
+    "email": "teste@example.com",
+    "password": "$2b$10$abc123def456ghi789jkl012mno345pqr678stu901vwx234yzA567B",
+    "role": "user",
+    "isActive": true,
+    "createdAt": "2025-09-19T13:56:43.354Z",
+    "updatedAt": "2025-09-19T13:56:43.354Z"
   }
 ]

@@ -18,7 +18,8 @@ Um sistema distribuído completo para gerenciamento de listas de compras utiliza
 4. [🧪 Demonstração](#demonstracao)
    - [Cliente de Teste Completo](#cliente-de-teste-completo)
    - [Endpoints da API](#endpoints-da-api)
-5. [🛠️ Tecnologias Utilizadas](#tecnologias-utilizadas)
+5. [🧹 Limpeza de Dados](#limpeza-dados)
+6. [🛠️ Tecnologias Utilizadas](#tecnologias-utilizadas)
 6. [📊 Padrões Implementados](#padroes-implementados)
    - [Microsserviços](#microsservicos)
    - [NoSQL](#nosql)
@@ -158,6 +159,67 @@ node client-demo.js --search=arroz
 node client-demo.js --help
 ```
 
+<a id="limpeza-dados"></a>
+## 🧹 Limpeza de Dados
+
+### Comandos de Limpeza
+```bash
+# Limpar todos os dados do banco (com confirmação)
+npm run clear:db
+
+# Limpar dados sem confirmação (modo force)
+npm run clear:db:force
+
+# Popular banco com dados de exemplo
+npm run populate:db
+
+# Reset completo (limpar + popular)
+npm run reset:db
+
+# Usando PowerShell (Windows)
+.\scripts\clear-database.ps1          # Com confirmação
+.\scripts\clear-database.ps1 -Force   # Sem confirmação
+.\scripts\clear-database.ps1 -Help    # Ajuda
+
+# Usando Node.js diretamente
+node scripts/clear-database.js        # Com confirmação
+node scripts/clear-database.js --force # Sem confirmação
+node scripts/populate-sample-data.js   # Popular dados
+```
+
+### 📊 Dados de Exemplo
+O comando `npm run populate:db` adiciona:
+- **2 usuários**: Admin e usuário teste
+- **5 itens**: Arroz, feijão, leite, pão e banana
+- **1 lista**: "Compras da Semana" com 3 itens
+
+### 🔄 Fluxo Recomendado
+```bash
+# 1. Reset completo do banco
+npm run reset:db
+
+# 2. Iniciar serviços
+npm start
+
+# 3. Testar sistema
+npm run demo
+```
+
+### ⚠️ Importante
+- **Esta ação é irreversível** - todos os dados serão removidos
+- Os arquivos de banco permanecem, mas ficam vazios (arrays [] e objetos {})
+- Use `npm run populate:db` para adicionar dados de exemplo
+- Use `npm run reset:db` para limpar e popular em um comando
+- Os serviços precisam ser reiniciados para refletir as mudanças
+
+### Arquivos Afetados
+- `services/user-service/database/users.json` ➜ `[]`
+- `services/user-service/database/users_index.json` ➜ `{}`
+- `services/item-service/database/items.json` ➜ `[]`
+- `services/item-service/database/items_index.json` ➜ `{}`
+- `services/list-service/database/lists.json` ➜ `[]`
+- `services/list-service/database/lists_index.json` ➜ `{}`
+
 <a id="endpoints-da-api"></a>
 ### Endpoints da API
 
@@ -266,22 +328,35 @@ lista-compras-microservices/
 │   │   ├── server.js
 │   │   ├── package.json
 │   │   └── database/        # JSON NoSQL
+│   │       ├── users.json
+│   │       └── users_index.json
 │   ├── item-service/        # Catálogo de itens
 │   │   ├── server.js
 │   │   ├── package.json
 │   │   └── database/        # JSON NoSQL
+│   │       ├── items.json
+│   │       └── items_index.json
 │   └── list-service/        # Listas de compras
 │       ├── server.js
 │       ├── package.json
 │       └── database/        # JSON NoSQL
+│           ├── lists.json
+│           └── lists_index.json
 ├── api-gateway/             # Gateway principal
 │   ├── server.js
 │   └── package.json
 ├── shared/                  # Componentes compartilhados
 │   ├── JsonDatabase.js      # NoSQL engine
-│   └── serviceRegistry.js   # Service discovery
+│   ├── serviceRegistry.js   # Service discovery
+│   └── services-registry.json
+├── scripts/                 # Scripts de automação
+│   ├── clear-database.js    # Limpeza do banco
+│   ├── clear-database.ps1   # Script PowerShell
+│   └── populate-sample-data.js # População com dados
 ├── client-demo.js           # Cliente de demonstração
-└── package.json             # Scripts do projeto
+├── package.json             # Scripts do projeto
+├── README.md
+└── LICENSE
 ```
 
 <a id="configuracao"></a>
@@ -303,9 +378,31 @@ Password: admin123
 
 <a id="dados-de-exemplo"></a>
 ### Dados de Exemplo
-- **20 itens** distribuídos em 5 categorias
-- **Categorias:** Alimentos, Limpeza, Higiene, Bebidas, Padaria
-- **Usuário admin** pré-configurado
+- **2 usuários:** Admin e usuário teste
+- **5 itens:** Arroz, feijão, leite, pão e banana
+- **1 lista:** "Compras da Semana" com 3 itens
+- **Categorias:** Grãos e Cereais, Laticínios, Padaria, Frutas
+
+### 📜 Scripts Disponíveis
+```bash
+# Execução
+npm start              # Iniciar todos os serviços
+npm run dev            # Modo desenvolvimento
+npm run demo           # Cliente de demonstração
+
+# Instalação
+npm run install:all    # Instalar dependências
+npm run clean          # Limpar node_modules
+
+# Banco de Dados
+npm run clear:db       # Limpar dados (confirma)
+npm run clear:db:force # Limpar dados (força)
+npm run populate:db    # Popular com dados exemplo
+npm run reset:db       # Limpar + popular
+
+# Monitoramento
+npm run health         # Verificar saúde dos serviços
+```
 
 <a id="quick-start"></a>
 ## 🏃‍♂️ Quick Start
