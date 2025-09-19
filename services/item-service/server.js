@@ -55,7 +55,7 @@ class ItemService {
                             id: uuidv4(),
                             name: 'Feijão Preto',
                             category: 'Alimentos',
-                            brand: 'Kicaldo',
+                            brand: 'Camil',
                             unit: 'kg',
                             averagePrice: 8.90,
                             barcode: '7891234567891',
@@ -425,13 +425,18 @@ class ItemService {
                 limit = 10, 
                 category, 
                 name,
-                active = true
+                active
             } = req.query;
             
             const skip = (page - 1) * parseInt(limit);
             
             // Filtros para itens
-            const filter = { active: active === 'true' };
+            const filter = {};
+
+            // Filtrar por ativo apenas se especificado
+            if (active !== undefined) {
+                filter.active = active === 'true';
+            }
 
             // Filtrar por categoria
             if (category) {
@@ -440,7 +445,26 @@ class ItemService {
 
             // Filtrar por nome (busca parcial)
             if (name) {
-                filter.name = { $regex: name, $options: 'i' };
+                // Para JSON Database, vamos usar busca simples
+                const allItems = await this.itemsDb.find({});
+                const filteredItems = allItems.filter(item => 
+                    item.name && item.name.toLowerCase().includes(name.toLowerCase())
+                );
+                
+                const startIndex = skip;
+                const endIndex = skip + parseInt(limit);
+                const paginatedItems = filteredItems.slice(startIndex, endIndex);
+                
+                return res.json({
+                    success: true,
+                    data: paginatedItems,
+                    pagination: {
+                        page: parseInt(page),
+                        limit: parseInt(limit),
+                        total: filteredItems.length,
+                        pages: Math.ceil(filteredItems.length / parseInt(limit))
+                    }
+                });
             }
 
             const items = await this.itemsDb.find(filter, {

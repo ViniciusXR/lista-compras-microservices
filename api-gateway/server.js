@@ -74,6 +74,7 @@ class APIGateway {
                     health: '/health',
                     registry: '/registry',
                     dashboard: '/api/dashboard',
+                    'dashboard-public': '/api/dashboard/public',
                     search: '/api/search'
                 },
                 services: serviceRegistry.listServices()
@@ -121,6 +122,7 @@ class APIGateway {
 
         // Endpoints agregados
         this.app.get('/api/dashboard', this.getDashboard.bind(this));
+        this.app.get('/api/dashboard/public', this.getPublicDashboard.bind(this));
         this.app.get('/api/search', this.globalSearch.bind(this));
     }
     setupErrorHandling() {
@@ -135,6 +137,7 @@ class APIGateway {
                     items: '/api/items',
                     lists: '/api/lists',
                     dashboard: '/api/dashboard',
+                    'dashboard-public': '/api/dashboard/public',
                     search: '/api/search'
                 }
             });
@@ -413,6 +416,77 @@ class APIGateway {
         }
     }
 
+    // Dashboard público (sem autenticação)
+    async getPublicDashboard(req, res) {
+        try {
+            console.log('🔓 Acessando dashboard público sem autenticação');
+            
+            let itemsData = null;
+            let categoriesData = null;
+            let itemsError = null;
+            
+            // Tentar acessar item-service diretamente
+            try {
+                console.log('🔍 Tentando acessar item-service na porta 3002...');
+                const itemsResponse = await axios.get('http://localhost:3002/items?limit=5', { timeout: 5000 });
+                itemsData = itemsResponse.data;
+                
+                const categoriesResponse = await axios.get('http://localhost:3002/categories', { timeout: 5000 });
+                categoriesData = categoriesResponse.data;
+                
+                console.log('✅ item-service acessado com sucesso');
+            } catch (error) {
+                console.log('❌ Erro ao acessar item-service:', error.message);
+                itemsError = `Erro de conexão: ${error.message}`;
+            }
+
+            const dashboard = {
+                timestamp: new Date().toISOString(),
+                architecture: 'Microservices with NoSQL',
+                database_approach: 'Database per Service',
+                access_type: 'PUBLIC (no authentication required)',
+                services_status: serviceRegistry.listServices(),
+                data: {
+                    items: {
+                        available: itemsData !== null,
+                        data: itemsData,
+                        error: itemsError,
+                        description: 'Catálogo de produtos disponível publicamente'
+                    },
+                    categories: {
+                        available: categoriesData !== null,
+                        data: categoriesData,
+                        error: itemsError,
+                        description: 'Categorias de produtos disponíveis'
+                    },
+                    users: {
+                        available: false,
+                        data: null,
+                        description: 'Serviço de usuários (requer autenticação para dados detalhados)'
+                    },
+                    lists: {
+                        available: false,
+                        data: null,
+                        description: 'Serviço de listas (requer autenticação para dados detalhados)'
+                    }
+                },
+                message: 'Dashboard público - dados limitados disponíveis sem autenticação'
+            };
+
+            res.json({
+                success: true,
+                data: dashboard
+            });
+
+        } catch (error) {
+            console.error('Erro no dashboard público:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao agregar dados do dashboard público'
+            });
+        }
+    }
+
     // Busca global entre serviços
     async globalSearch(req, res) {
         try {
@@ -514,6 +588,7 @@ class APIGateway {
             console.log(`Health: http://localhost:${this.port}/health`);
             console.log(`Registry: http://localhost:${this.port}/registry`);
             console.log(`Dashboard: http://localhost:${this.port}/api/dashboard`);
+            console.log(`Dashboard Público: http://localhost:${this.port}/api/dashboard/public`);
             console.log(`Architecture: Microservices with NoSQL`);
             console.log('=====================================');
             console.log('Rotas disponíveis:');
@@ -524,6 +599,7 @@ class APIGateway {
             console.log('   GET  /api/lists');
             console.log('   GET  /api/search?q=termo');
             console.log('   GET  /api/dashboard');
+            console.log('   GET  /api/dashboard/public');
             console.log('=====================================');
         });
     }

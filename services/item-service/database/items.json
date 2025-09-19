@@ -258,5 +258,18 @@
     "active": true,
     "createdAt": "2025-09-18T20:14:49.807Z",
     "updatedAt": "2025-09-18T20:14:49.807Z"
+  },
+  {
+    "id": "5528a43d-fdc3-4555-ae02-7f84e3c3ff7b",
+    "name": "Item Demo NoSQL",
+    "category": "Alimentos",
+    "brand": "Demo Brand",
+    "unit": "un",
+    "averagePrice": 9.99,
+    "barcode": "1234567890123",
+    "description": "Item criado via demo com banco NoSQL",
+    "active": true,
+    "createdAt": "2025-09-19T02:55:35.857Z",
+    "updatedAt": "2025-09-19T02:55:35.858Z"
   }
 ]

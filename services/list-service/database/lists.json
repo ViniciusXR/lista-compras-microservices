@@ -13,5 +13,20 @@
     },
     "createdAt": "2025-09-18T20:14:48.752Z",
     "updatedAt": "2025-09-18T20:14:48.753Z"
+  },
+  {
+    "id": "a25c13b5-36c8-405f-a014-2469fec7b390",
+    "userId": "75d44e60-d0f3-4567-aed7-fb0696804b17",
+    "name": "Lista de Compras Demo",
+    "description": "Lista criada durante demonstração do sistema",
+    "status": "active",
+    "items": [],
+    "summary": {
+      "totalItems": 0,
+      "purchasedItems": 0,
+      "estimatedTotal": 0
+    },
+    "createdAt": "2025-09-19T02:55:34.795Z",
+    "updatedAt": "2025-09-19T02:55:34.795Z"
   }
 ]

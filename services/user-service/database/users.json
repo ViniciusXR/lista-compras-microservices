@@ -26,5 +26,19 @@
     },
     "createdAt": "2025-09-18T20:14:43.593Z",
     "updatedAt": "2025-09-18T20:14:43.594Z"
+  },
+  {
+    "id": "75d44e60-d0f3-4567-aed7-fb0696804b17",
+    "email": "demo1758250529314@microservices.com",
+    "username": "demo1758250529314",
+    "password": "$2a$12$pada7hVPRzj5xDXX8c7hwu.aO2M92YDPkF34fw0EzTEFwFxOEBuhS",
+    "firstName": "Demo",
+    "lastName": "User",
+    "preferences": {
+      "defaultStore": "Supermercado Central",
+      "currency": "BRL"
+    },
+    "createdAt": "2025-09-19T02:55:29.605Z",
+    "updatedAt": "2025-09-19T02:55:29.605Z"
   }
 ]
